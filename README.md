@@ -1,23 +1,34 @@
-# Simulation de Stratégie Stop-Loss
+# Stratégie Stop-Loss avec Analyse de Sensibilité SHAP
 
-Ce projet implémente une simulation de stratégie de gestion de portefeuille avec stop-loss basée sur le modèle de Black-Scholes.
+Ce projet implémente une stratégie de gestion de portefeuille basée sur un stop-loss dynamique, avec une analyse de sensibilité utilisant les valeurs SHAP.
 
-## Structure du projet
+## Description
 
-- `black_scholes_simulation.py` : Implémentation du modèle de Black-Scholes
+La stratégie implémentée permet de :
+- Protéger un pourcentage minimum du capital initial (floor)
+- Basculer vers l'actif sans risque lorsque le plancher est atteint
+- Analyser l'impact des paramètres sur la performance via SHAP values
+
+## Fonctionnalités
+
+- Simulation de trajectoires de prix selon le modèle de Black-Scholes
+- Implémentation de la stratégie Stop-Loss
+- Analyse de sensibilité avec SHAP values
+- Visualisation des résultats
+
+## Structure du Projet
+
 - `stop_loss_strategy.py` : Implémentation de la stratégie Stop-Loss
-- `sensitivity_analysis.py` : Analyse de sensibilité et étude des rendements
-- `requirements.txt` : Dépendances du projet
-- `michelin_data.csv` : Données historiques de l'action Michelin (à fournir)
+- `black_scholes_simulation.py` : Simulation des prix selon Black-Scholes
+- `sensitvity.py` : Analyse de sensibilité avec SHAP
+- `strategy_app.py` : Application principale
 
 ## Installation
 
-1. Créer un environnement virtuel Python :
+1. Cloner le dépôt :
 ```bash
-python -m venv venv
-source venv/bin/activate  # Sur Linux/Mac
-# ou
-venv\Scripts\activate  # Sur Windows
+git clone https://github.com/dahhou147/stop-loss-strategy.git
+cd stop-loss-strategy
 ```
 
 2. Installer les dépendances :
@@ -27,63 +38,32 @@ pip install -r requirements.txt
 
 ## Utilisation
 
-### Simulation du modèle de Black-Scholes
-
 ```python
-from black_scholes_simulation import BlackScholesSimulation
+from sensitivity import Sensitivity
 
-# Création d'une instance
-simulation = BlackScholesSimulation(
-    S0=100,      # Prix initial
-    r=0.05,      # Taux sans risque
-    sigma=0.2,   # Volatilité
-    T=1,         # Horizon temporel
-    dt=0.01      # Pas de temps
-)
+# Initialisation
+sensitivity = Sensitivity(initial_capital=100000)
 
-# Simulation et visualisation
-simulation.plot_paths(5)  # Simule 5 trajectoires
+# Analyse de sensibilité
+sensitivity.plot_sensitivity(n_paths=1000, n_samples=100)
+
+# Visualisation des rendements
+sensitivity.plot_strategy_returns(rf=0.02, floor_percentage=95)
 ```
 
-### Simulation de la stratégie Stop-Loss
+## Dépendances
 
-```python
-from stop_loss_strategy import StopLossStrategy
+- numpy>=1.24.3
+- pandas>=2.0.3
+- matplotlib>=3.7.1
+- seaborn>=0.12.2
+- scipy>=1.10.1
+- shap>=0.45.1
 
-# Création d'une instance
-strategy = StopLossStrategy(
-    initial_capital=100000,
-    S0=100,
-    r=0.08,
-    sigma=0.2,
-    rf=0.03,
-    T=1,
-    dt=0.01,
-    floor_percentage=95  # Garantir 95% du capital initial
-)
+## Auteur
 
-# Simulation et visualisation
-strategy.plot_results(1000)  # Simule 1000 trajectoires
-```
+- **Usama Dahhou** - [@dahhou147](https://github.com/dahhou147)
 
-### Analyse de sensibilité
+## Licence
 
-```python
-from sensitivity_analysis import sensitivity_analysis, plot_sensitivity_results
-
-# Exécution de l'analyse
-results_df = sensitivity_analysis()
-
-# Visualisation des résultats
-plot_sensitivity_results(results_df)
-```
-
-## Données Michelin
-
-Pour l'analyse des rendements de Michelin, vous devez fournir un fichier CSV contenant les prix de clôture de l'action. Le fichier doit contenir une colonne 'Close' avec les prix de clôture.
-
-## Notes
-
-- Les simulations sont basées sur le modèle de Black-Scholes qui suppose une distribution normale des rendements.
-- La stratégie Stop-Loss implémentée est une version simplifiée qui ne prend en compte que deux états : actif risqué ou actif sans risque.
-- Les résultats de l'analyse de sensibilité peuvent varier selon les paramètres choisis. 
+Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails. 
