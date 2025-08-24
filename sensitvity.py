@@ -20,12 +20,12 @@ class Sensitivity:
         self.data = load_michelin_data()
         self.initial_capital = initial_capital
         
-        # Calcul du rendement moyen annuel et de la volatilité
+
         returns = np.log(self.data['Close']/self.data['Close'].shift(1))
-        self.r = returns.mean() * 252  # Rendement moyen annualisé
-        self.sigma = returns.std() * np.sqrt(252)  # Volatilité annualisée
-        self.T = 1  # Horizon temporel (1 an)
-        self.N = 252  # Nombre de pas de temps (un par jour)
+        self.r = returns.mean() * 252  
+        self.sigma = returns.std() * np.sqrt(252)  
+        self.T = 1  
+        self.N = 252  
 
     def get_simulation(self, rf, floor_percentage, n_paths=1000):
         """
@@ -59,17 +59,14 @@ class Sensitivity:
         n_paths: Nombre de trajectoires par simulation
         n_samples: Nombre d'échantillons pour l'analyse
         """
-        # Création des échantillons de paramètres
         np.random.seed(42)
         rf_samples = np.random.uniform(0.01, 0.05, n_samples)  # Taux sans risque entre 1% et 5%
         floor_samples = np.random.uniform(90, 98, n_samples)  # Floor entre 90% et 98%
         sigma_samples = np.random.uniform(0.1, 0.5, n_samples)  # Volatilité entre 10% et 50%
         
-        # Préparation des données pour SHAP
         X = np.column_stack([rf_samples, floor_samples, sigma_samples])
         feature_names = ['Taux sans risque', 'Floor %', 'Volatilité']
         
-        # Calcul des valeurs finales pour chaque combinaison
         final_values = np.zeros(n_samples)
         for i in range(n_samples):
             portfolio_values, _ = self.get_simulation(
@@ -79,14 +76,12 @@ class Sensitivity:
             )
             final_values[i] = np.mean(portfolio_values)  # On prend la moyenne des valeurs finales
         
-        # Calcul des valeurs SHAP
         explainer = shap.KernelExplainer(
             lambda x: self._predict_shap(x, n_paths),
             X
         )
         shap_values = explainer.shap_values(X)
         
-        # Création des graphiques SHAP
         plt.figure(figsize=(10, 6))
         shap.summary_plot(
             shap_values,
@@ -98,7 +93,6 @@ class Sensitivity:
         plt.tight_layout()
         plt.show()
         
-        # Graphiques de dépendance
         plt.figure(figsize=(15, 5))
         for i, feature in enumerate(feature_names):
             plt.subplot(1, 3, i+1)
@@ -107,7 +101,6 @@ class Sensitivity:
         plt.tight_layout()
         plt.show()
         
-        # Affichage des statistiques
         print("\nStatistiques sur l'analyse SHAP:")
         print(f"Nombre d'échantillons: {n_samples}")
         print(f"Nombre de trajectoires par échantillon: {n_paths}")
@@ -139,10 +132,8 @@ class Sensitivity:
         
         plt.figure(figsize=(12, 6))
         
-        # Histogramme des rendements avec seaborn
         sns.histplot(final_values, stat='density', alpha=0.7, label='Distribution des rendements')
         
-        # Estimation de la densité par noyau gaussien
         kde = gaussian_kde(final_values)
         x_range = np.linspace(min(final_values), max(final_values), 100)
         plt.plot(x_range, kde(x_range), 'r-', label='Densité estimée (KDE)')
@@ -157,14 +148,12 @@ class Sensitivity:
         plt.grid(True)
         plt.show()
         
-        # Statistiques descriptives
         print(f"\nStatistiques sur {n_simulations} simulations:")
         print(f"Rendement moyen: {np.mean(final_values)*100:.2f}%")
         print(f"Rendement médian: {np.median(final_values)*100:.2f}%")
         print(f"Écart-type: {np.std(final_values)*100:.2f}%")
         print(f"Probabilité de tomber sous le plancher: {np.mean(final_values < floor_percentage/100)*100:.2f}%")
 
-# Exemple d'utilisation
 if __name__ == "__main__":
     sensitivity = Sensitivity(initial_capital=100000)
     sensitivity.plot_sensitivity(n_paths=1000, n_samples=500)
