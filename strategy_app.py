@@ -30,10 +30,8 @@ def plot_return_distribution(title="Distribution des rendements"):
     plt.figure(figsize=(12, 6))
     data = load_michelin_data()['Close']
     returns = np.log(data/data.shift(1)).dropna()
-    # Histogramme des rendements avec seaborn
     sns.histplot(returns, stat='density', alpha=0.8, label='Distribution empirique')
     
-    # Estimation de la densité par noyau gaussien
     kde = gaussian_kde(returns)
     x_range = np.linspace(returns.min(), returns.max(), 100)
     plt.plot(x_range, kde(x_range), 'r-', label='Densité estimée (KDE)')
@@ -72,10 +70,8 @@ def plot_strategy_returns(rf=0.02, floor_percentage=95, n_simulations=1000):
     final_values,sigma = sensitivity_analysis(rf, floor_percentage)
     plt.figure(figsize=(12, 6))
     
-    # Histogramme des rendements avec seaborn
     sns.histplot(final_values, stat='density', alpha=0.7, label='Distribution des rendements')
     
-    # Estimation de la densité par noyau gaussien
     kde = gaussian_kde(final_values)
     x_range = np.linspace(min(final_values), max(final_values), 100)
     plt.plot(x_range, kde(x_range), 'r-', label='Densité estimée (KDE)')
@@ -90,7 +86,6 @@ def plot_strategy_returns(rf=0.02, floor_percentage=95, n_simulations=1000):
     plt.grid(True)
     plt.show()
     
-    # Statistiques descriptives
     print(f"\nStatistiques sur {n_simulations} simulations:")
     print(f"Rendement moyen: {np.mean(final_values)*100:.2f}%")
     print(f"Rendement médian: {np.median(final_values)*100:.2f}%")
