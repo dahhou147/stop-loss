@@ -1,4 +1,3 @@
-#%%
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -24,7 +23,6 @@ class StopLossStrategy:
         self.floor_value = initial_capital * (floor_percentage / 100)
         self.rf = rf
         
-        # Simulation du prix de l'actif
         self.price_simulation = BlackScholesSimulation(initial_capital, r, sigma, T, N)
 
     def simulate_strategy(self, n_paths):
@@ -37,16 +35,13 @@ class StopLossStrategy:
         Retourne:
         Array contenant les valeurs du portefeuille pour chaque trajectoire
         """
-        # Simulation des prix
         t, price_paths = self.price_simulation.simulate_paths(n_paths)
         n_steps, n_paths = price_paths.shape
         portfolio_value = np.zeros((n_steps, n_paths))
         
-        # Calcul de la valeur minimale garantie (floor) pour chaque pas de temps
         time_grid = np.linspace(0, self.price_simulation.T, n_steps)
         floor_values = self.floor_value * np.exp(self.rf * time_grid)
         
-        # Calcul vectorisé des valeurs du portefeuille
         allocation = (price_paths > floor_values[:, None]).astype(float)
         portfolio_value = allocation * price_paths + (1 - allocation) * floor_values[:, None]
         
@@ -87,13 +82,11 @@ class StopLossStrategy:
         Retourne:
         Valeurs SHAP et les paramètres correspondants
         """
-        # Création des échantillons de paramètres
         np.random.seed(42)
         rf_samples = np.random.uniform(0.01, 0.05, n_samples)  # Taux sans risque entre 1% et 5%
         sigma_samples = np.random.uniform(0.15, 0.25, n_samples)  # Volatilité entre 15% et 25%
         floor_samples = np.random.uniform(90, 98, n_samples)  # Floor entre 90% et 98%
         
-        # Calcul des valeurs finales pour chaque combinaison de paramètres
         final_values = np.zeros(n_samples)
         for i in range(n_samples):
             strategy = StopLossStrategy(
@@ -108,11 +101,9 @@ class StopLossStrategy:
             portfolio_values = strategy.simulate_strategy(1)
             final_values[i] = portfolio_values[-1, 0]
         
-        # Préparation des données pour SHAP
         X = np.column_stack([rf_samples, sigma_samples, floor_samples])
         feature_names = ['Taux sans risque', 'Volatilité', 'Floor %']
         
-        # Calcul des valeurs SHAP
         explainer = shap.KernelExplainer(lambda x: self._predict_shap(x, n_samples), X)
         shap_values = explainer.shap_values(X)
         
@@ -143,7 +134,6 @@ class StopLossStrategy:
         """
         shap_values, X, feature_names, final_values = self.calculate_shap_values(n_samples)
         
-        # Création du résumé SHAP
         plt.figure(figsize=(10, 6))
         shap.summary_plot(
             shap_values,
@@ -155,7 +145,6 @@ class StopLossStrategy:
         plt.tight_layout()
         plt.show()
         
-        # Création du graphique de dépendance
         plt.figure(figsize=(15, 5))
         for i, feature in enumerate(feature_names):
             plt.subplot(1, 3, i+1)
@@ -170,9 +159,6 @@ class StopLossStrategy:
         print("\nImpact moyen des paramètres:")
         for i, feature in enumerate(feature_names):
             print(f"{feature}: {np.abs(shap_values[:, i]).mean():.4f}")
-#%%
-#%%
-# Exemple d'utilisation
 if __name__ == "__main__":
     # Paramètres
     initial_capital = 100000
@@ -191,4 +177,3 @@ if __name__ == "__main__":
     
     # Analyse SHAP
     strategy.plot_shap_analysis(n_samples=100)
-# %%
