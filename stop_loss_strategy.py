@@ -23,7 +23,6 @@ class StopLossStrategy:
         self.floor_value = initial_capital * (floor_percentage / 100)
         self.rf = rf
         
-        # Simulation du prix de l'actif
         self.price_simulation = BlackScholesSimulation(initial_capital, r, sigma, T, N)
         
     def simulate_strategy(self, n_paths):
@@ -36,7 +35,6 @@ class StopLossStrategy:
         Retourne:
         Array contenant les valeurs du portefeuille pour chaque trajectoire
         """
-        # Simulation des prix
         t, price_paths = self.price_simulation.simulate_paths(n_paths)
         n_steps, _ = price_paths.shape
         portfolio_value = np.zeros((n_steps, n_paths))
@@ -63,7 +61,6 @@ class StopLossStrategy:
         plt.ylabel('Densité')
         plt.legend()
         plt.show()
-            # Statistiques descriptives
         print(f"\nStatistiques sur {n_paths} simulations:")
         print(f"Valeur minimale garantie: {self.floor_percentage:.2f}%")
         print(f"moyenne de rendement finale: {np.mean(final_values):.2f}")
@@ -73,7 +70,6 @@ class StopLossStrategy:
 
 
 #%%
-# Exemple d'utilisation
 if __name__ == "__main__":
     # Paramètres
     initial_capital = 100000
